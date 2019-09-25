@@ -1,0 +1,56 @@
+import nltk   
+import urllib
+from bs4 import BeautifulSoup
+import pandas as pd
+
+tmdbCSV = pd.read_csv("links.csv")
+
+tmdb_Id = tmdbCSV.tmdbId
+
+for x in range(0,1):
+    id = str(tmdb_Id[x])
+    id = id.split('.')
+    if (pd.isna(id[0])) :
+        print("NAN")    
+    else :
+        url = "https://www.themoviedb.org/movie/"+id[0]
+ 
+        html = urllib.request.urlopen(url)
+        s = html.read()
+        soup = BeautifulSoup(s)
+        for script in soup(["script", "style"]):
+            script.extract()
+        text = soup.get_text()
+    
+        lines = (line.strip() for line in text.splitlines())
+
+        chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+
+        text = '\n'.join(chunk for chunk in chunks if chunk)
+    
+        ind = text.find('Revenue')
+                
+        Rev = text[ind+8:ind+23]
+        
+        ind = text.find('Budget')
+
+        Bud = text[ind+7:ind+21]
+        
+        print(tmdb_Id[x])
+        print(Bud)
+        if Bud.find('-') == -1 and Rev.find('-'):            
+            print("budget and revenue are given :")
+            
+            Budget = Bud.split('.')              
+            Budget = Budget[0].split('$')
+            B = int(Budget[1].replace(',',''))
+            print("Budget (in $) : "+str(B))
+        
+            Revenue = Rev.split('.') 
+            Revenue = Revenue[0].split('$')
+            R = int(Revenue[1].replace(',',''))
+            print("Revenue (in $) : "+str(R))
+        
+            Profit_Loss = R-B
+            print("Profit (in $) : "+str(Profit_Loss) )    
+            
