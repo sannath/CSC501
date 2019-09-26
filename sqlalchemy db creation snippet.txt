@@ -1,0 +1,17 @@
+import pandas as pd
+from sqlalchemy import create_engine
+import matplotlib.pyplot as plt
+
+rating_db = create_engine('sqlite:///rating.db')
+
+%%time
+chunk_size = 100000
+x = 0
+y = 1
+for data_f in pd.read_csv('ratings_27M.csv', chunksize=chunk_size, iterator=True):
+      data_f = data_f.rename(columns={c: c.replace(' ', '') for c in data_f.columns}) 
+      data_f.index += y
+      x+=1
+      data_f.to_sql('tab', rating_db, if_exists='append')
+      y = data_f.index[-1] + 1
+print("loading to sql_DB")
